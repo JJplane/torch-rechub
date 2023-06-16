@@ -11,9 +11,13 @@ from torch_rechub.utils.data import DataGenerator
 
 
 def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
-    df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
-    df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
-    df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    # df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
+    # df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
+    # df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    df_train = pd.read_csv(data_path + '/ali_ccp_train_10W.csv')
+    df_val = pd.read_csv(data_path + '/ali_ccp_val_10W.csv')
+    df_test = pd.read_csv(data_path + '/ali_ccp_test_10W.csv')
+
     # df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
     # df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
     # df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
