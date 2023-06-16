@@ -91,7 +91,7 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
     #adaptive weight loss:
     #mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, adaptive_params={"method": "uwl"}, n_epoch=epoch, earlystop_patience=10, device=device, model_path=save_dir)
 
-    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir,writer=None)
+    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir)
     mtl_trainer.fit(train_dataloader, val_dataloader)
     auc = mtl_trainer.evaluate(mtl_trainer.model, test_dataloader)
     # writer.close()
