@@ -1,7 +1,7 @@
 import sys
-from tensorboardX import SummaryWriter
-sys.path.append("../..")
-writer = SummaryWriter('logs')
+# from tensorboardX import SummaryWriter
+# sys.path.append("../..")
+# writer = SummaryWriter('logs')
 
 import pandas as pd
 import torch
@@ -87,14 +87,14 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
 
     dg = DataGenerator(x_train, y_train)
     train_dataloader, val_dataloader, test_dataloader = dg.generate_dataloader(x_val=x_val, y_val=y_val, x_test=x_test, y_test=y_test, batch_size=batch_size,num_workers=num_workers)
-    writer.add_graph(model, train_dataloader.__iter__().__next__()[0])
+    # writer.add_graph(model, train_dataloader.__iter__().__next__()[0])
     #adaptive weight loss:
     #mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, adaptive_params={"method": "uwl"}, n_epoch=epoch, earlystop_patience=10, device=device, model_path=save_dir)
 
-    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir,writer=writer)
+    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir,writer=None)
     mtl_trainer.fit(train_dataloader, val_dataloader)
     auc = mtl_trainer.evaluate(mtl_trainer.model, test_dataloader)
-    writer.close()
+    # writer.close()
     print(f'test auc: {auc}')
 
 
