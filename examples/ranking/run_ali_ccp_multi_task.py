@@ -4,16 +4,19 @@ sys.path.append("../..")
 
 import pandas as pd
 import torch
-from torch_rechub.models.multi_task import SharedBottom, ESMM, MMOE, PLE, AITM
+from torch_rechub.models.multi_task import SharedBottom, ESMM,ESMM_fix, MMOE, PLE, AITM
 from torch_rechub.trainers import MTLTrainer
 from torch_rechub.basic.features import DenseFeature, SparseFeature
 from torch_rechub.utils.data import DataGenerator
 
 
 def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
-    df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
-    df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
-    df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    # df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
+    # df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
+    # df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
+    df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
+    df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
     print("train : val : test = %d %d %d" % (len(df_train), len(df_val), len(df_test)))
     train_idx, val_idx = df_train.shape[0], df_train.shape[0] + df_val.shape[0]
     data = pd.concat([df_train, df_val, df_test], axis=0)
@@ -27,7 +30,7 @@ def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
     sparse_cols = [col for col in col_names if col not in dense_cols and col not in ['cvr_label', 'ctr_label', 'ctcvr_label']]
     print("sparse cols:%d dense cols:%d" % (len(sparse_cols), len(dense_cols)))
     #define dense and sparse features
-    if model_name == "ESMM":
+    if model_name == "ESMM" or model_name == "ESMM_fix":
         label_cols = ['cvr_label', 'ctr_label', "ctcvr_label"]  #the order of 3 labels must fixed as this
         #ESMM only for sparse features in origin paper
         item_cols = ['129', '205', '206', '207', '210', '216']  #assumption features split for user and item
@@ -49,7 +52,7 @@ def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
         return features, x_train, y_train, x_val, y_val, x_test, y_test
 
 
-def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, save_dir, seed):
+def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, save_dir, seed, num_workers):
     torch.manual_seed(seed)
     if model_name == "SharedBottom":
         features, x_train, y_train, x_val, y_val, x_test, y_test = get_ali_ccp_data_dict(model_name)
@@ -59,6 +62,10 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
         user_features, item_features, x_train, y_train, x_val, y_val, x_test, y_test = get_ali_ccp_data_dict(model_name)
         task_types = ["classification", "classification", "classification"]  #cvr,ctr,ctcvr
         model = ESMM(user_features, item_features, cvr_params={"dims": [16, 8]}, ctr_params={"dims": [16, 8]})
+    elif model_name == "ESMM_fix":
+        user_features, item_features, x_train, y_train, x_val, y_val, x_test, y_test = get_ali_ccp_data_dict(model_name)
+        task_types = ["classification", "classification", "classification"]  # cvr,ctr,ctcvr
+        model = ESMM_fix(user_features, item_features, cvr_params={"dims": [16, 8]}, ctr_params={"dims": [16, 8]})
     elif model_name == "MMOE":
         features, x_train, y_train, x_val, y_val, x_test, y_test = get_ali_ccp_data_dict(model_name)
         task_types = ["classification", "classification"]
@@ -73,7 +80,7 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
         model = AITM(features, 2, bottom_params={"dims": [32, 16]}, tower_params_list=[{"dims": [8]}, {"dims": [8]}])
 
     dg = DataGenerator(x_train, y_train)
-    train_dataloader, val_dataloader, test_dataloader = dg.generate_dataloader(x_val=x_val, y_val=y_val, x_test=x_test, y_test=y_test, batch_size=batch_size)
+    train_dataloader, val_dataloader, test_dataloader = dg.generate_dataloader(x_val=x_val, y_val=y_val, x_test=x_test, y_test=y_test, batch_size=batch_size,num_workers=num_workers)
 
     #adaptive weight loss:
     #mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, adaptive_params={"method": "uwl"}, n_epoch=epoch, earlystop_patience=10, device=device, model_path=save_dir)
@@ -87,17 +94,18 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', default='SharedBottom')
+    parser.add_argument('--model_name', default='ESMM')
     parser.add_argument('--epoch', type=int, default=1)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--batch_size', type=int, default=1024)
+    parser.add_argument('--num_workers', type=int, default=16)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
-    parser.add_argument('--device', default='cpu')  #cuda:0
+    parser.add_argument('--device', default='Gpu')  #cuda:0
     parser.add_argument('--save_dir', default='./')
     parser.add_argument('--seed', type=int, default=2022)
 
     args = parser.parse_args()
-    main(args.model_name, args.epoch, args.learning_rate, args.batch_size, args.weight_decay, args.device, args.save_dir, args.seed)
+    main(args.model_name, args.epoch, args.learning_rate, args.batch_size, args.weight_decay, args.device, args.save_dir, args.seed, args.num_workers)
 """
 python run_ali_ccp_multi_task.py --model_name SharedBottom
 python run_ali_ccp_multi_task.py --model_name ESMM

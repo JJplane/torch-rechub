@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from ..basic.callback import EarlyStopper
 from ..utils.data import get_loss_func, get_metric_func
-from ..models.multi_task import ESMM
+from ..models.multi_task import ESMM,ESMM_fix
 from ..utils.mtl import shared_task_layers, gradnorm, MetaBalance
 
 
@@ -109,6 +109,10 @@ class MTLTrainer(object):
             loss_list = [self.loss_fns[i](y_preds[:, i], ys[:, i].float()) for i in range(self.n_task)]
             if isinstance(self.model, ESMM):
                 loss = sum(loss_list[1:])  #ESSM only compute loss for ctr and ctcvr task
+            elif isinstance(self.model, ESMM_fix):
+                loss = sum(loss_list[1:])
+                loss_cvr = loss_list[0] * ys[:, 1].float()
+                loss = loss + loss_cvr
             else:
                 if self.adaptive_method != None:
                     if self.adaptive_method == "uwl":
