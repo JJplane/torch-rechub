@@ -14,6 +14,6 @@ unzip ali-cpp.zip
 cd .. /..
 conda install -c conda-forge htop
 python run_ali_ccp_multi_task.py --save_dir esmm_fix --epoch 10 --model_name ESMM_fix
-head -n 10 ali_ccp_train.csv > ali_ccp_train_10W.csv
-head -n 10 ali_ccp_test.csv > ali_ccp_test_10W.csv
-head -n 10 ali_ccp_val.csv > ali_ccp_val_10W.csv
+head -n 100000 ali_ccp_train.csv > ali_ccp_train_10W.csv
+head -n 100000 ali_ccp_test.csv > ali_ccp_test_10W.csv
+head -n 100000 ali_ccp_val.csv > ali_ccp_val_10W.csv
