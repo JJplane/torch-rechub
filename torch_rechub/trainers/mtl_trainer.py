@@ -1,5 +1,5 @@
 import os
-import tqdm
+from tqdm import tqdm
 import numpy as np
 import torch
 import torch.nn as nn
@@ -103,7 +103,7 @@ class MTLTrainer(object):
     def train_one_epoch(self, data_loader):
         self.model.train()
         total_loss = np.zeros(self.n_task)
-        tk0 = tqdm.tqdm(data_loader, desc="train", smoothing=0, mininterval=1.0)
+        tk0 = tqdm(data_loader, desc="train", smoothing=0, mininterval=1.0)
         for iter_i, (x_dict, ys) in enumerate(tk0):
             x_dict = {k: v.to(self.device) for k, v in x_dict.items()}  #tensor to GPU
             ys = ys.to(self.device)
@@ -113,7 +113,7 @@ class MTLTrainer(object):
             ctr_auc = roc_auc_score(ys[:, 1].cpu().detach().numpy(), y_preds[:, 1].cpu().detach().numpy())
             ctcvr_auc = roc_auc_score(ys[:, 2].cpu().detach().numpy(), y_preds[:, 2].cpu().detach().numpy())
             # 显示在进度条上,保留四位小数
-            tk0.set_postfix({ "cvr_auc": '%.4f' % cvr_auc, "ctr_auc": '%.4f' % ctr_auc, "ctcvr_auc": '%.4f' % ctcvr_auc})
+            tqdm.set_postfix({ "cvr_auc": '%.4f' % cvr_auc, "ctr_auc": '%.4f' % ctr_auc, "ctcvr_auc": '%.4f' % ctcvr_auc})
             if isinstance(self.model, ESMM):
                 loss = sum(loss_list[1:])  #ESSM only compute loss for ctr and ctcvr task
             elif isinstance(self.model, ESMM_fix):
@@ -179,7 +179,7 @@ class MTLTrainer(object):
         model.eval()
         targets, predicts = list(), list()
         with torch.no_grad():
-            tk0 = tqdm.tqdm(data_loader, desc="validation", smoothing=0, mininterval=1.0)
+            tk0 = tqdm(data_loader, desc="validation", smoothing=0, mininterval=1.0)
             for i, (x_dict, ys) in enumerate(tk0):
                 x_dict = {k: v.to(self.device) for k, v in x_dict.items()}  #tensor to GPU
                 ys = ys.to(self.device)
@@ -194,7 +194,7 @@ class MTLTrainer(object):
         model.eval()
         predicts = list()
         with torch.no_grad():
-            tk0 = tqdm.tqdm(data_loader, desc="predict", smoothing=0, mininterval=1.0)
+            tk0 = tqdm(data_loader, desc="predict", smoothing=0, mininterval=1.0)
             for i, x_dict in enumerate(tk0):
                 x_dict = {k: v.to(self.device) for k, v in x_dict.items()}
                 y_preds = model(x_dict)
