@@ -13,4 +13,5 @@ cd ali-ccp/
 unzip ali-cpp.zip
 cd .. /..
 conda install -c conda-forge htop
-python run_ali_ccp_multi_task.py
+python run_ali_ccp_multi_task.py --save_dir esmm_fix --epoch 10 --model_name ESMM_fix
+```

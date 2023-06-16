@@ -111,7 +111,7 @@ class MTLTrainer(object):
                 loss = sum(loss_list[1:])  #ESSM only compute loss for ctr and ctcvr task
             elif isinstance(self.model, ESMM_fix):
                 loss = sum(loss_list[1:])
-                loss_cvr = loss_list[0] * ys[:, 1].float()
+                loss_cvr = sum(loss_list[0] * ys[:, 1].float())
                 loss = loss + loss_cvr
             else:
                 if self.adaptive_method != None:
