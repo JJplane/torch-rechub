@@ -29,7 +29,7 @@ class ESMM(nn.Module):
         self.embedding = EmbeddingLayer(user_features + item_features)
         self.tower_dims = user_features[0].embed_dim + item_features[0].embed_dim
         self.tower_cvr = MLP(self.tower_dims, **cvr_params)
-        self.tower_ctr = MLP(self.tower_dims, **ctr_params)
+        # self.tower_ctr = MLP(self.tower_dims, **ctr_params)
 
     def forward(self, x):
         #Field-wise Pooling Layer for user and item
@@ -39,7 +39,8 @@ class ESMM(nn.Module):
                                              squeeze_dim=False).sum(dim=1)  #[batch_size, embed_dim]
         input_tower = torch.cat((embed_user_features, embed_item_features), dim=1)
         cvr_logit = self.tower_cvr(input_tower)
-        ctr_logit = self.tower_ctr(input_tower)
+        # ctr_logit = self.tower_ctr(input_tower)
+        ctr_logit = self.tower_cvr(input_tower)
         cvr_pred = torch.sigmoid(cvr_logit)
         ctr_pred = torch.sigmoid(ctr_logit)
         ctcvr_pred = torch.mul(ctr_pred, cvr_pred)

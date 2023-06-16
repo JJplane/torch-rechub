@@ -45,8 +45,10 @@ class MTLTrainer(object):
         device="cpu",
         gpus=None,
         model_path="./",
+        writer=None,
     ):
         self.model = model
+        self.writer = writer
         if gpus is None:
             gpus = []
         if optimizer_params is None:
@@ -113,6 +115,10 @@ class MTLTrainer(object):
             ctr_auc = roc_auc_score(ys[:, 1].cpu().detach().numpy(), y_preds[:, 1].cpu().detach().numpy())
             ctcvr_auc = roc_auc_score(ys[:, 2].cpu().detach().numpy(), y_preds[:, 2].cpu().detach().numpy())
             # 显示在进度条上,保留四位小数
+            self.writer.add_scalar('train/cvr_auc', cvr_auc, iter_i)
+            self.writer.add_scalar('train/ctr_auc', ctr_auc, iter_i)
+            self.writer.add_scalar('train/ctcvr_auc', ctcvr_auc, iter_i)
+
             tk0.set_postfix({ "cvr_auc": '%.4f' % cvr_auc, "ctr_auc": '%.4f' % ctr_auc, "ctcvr_auc": '%.4f' % ctcvr_auc})
             if isinstance(self.model, ESMM):
                 loss = sum(loss_list[1:])  #ESSM only compute loss for ctr and ctcvr task
@@ -129,6 +135,7 @@ class MTLTrainer(object):
                             loss += 2 * loss_i * torch.exp(-w_i) + w_i
                 else:
                     loss = sum(loss_list) / self.n_task
+            self.writer.add_scalar('train/loss', loss, iter_i)
             if self.adaptive_method == 'metabalance':
                 self.share_optimizer.zero_grad()
                 self.task_optimizer.zero_grad()

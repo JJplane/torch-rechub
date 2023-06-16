@@ -1,6 +1,7 @@
 import sys
-
+from tensorboardX import SummaryWriter
 sys.path.append("../..")
+writer = SummaryWriter('logs')
 
 import pandas as pd
 import torch
@@ -11,16 +12,16 @@ from torch_rechub.utils.data import DataGenerator
 
 
 def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
-    # df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
-    # df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
-    # df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
+    df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
+    df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
     # df_train = pd.read_csv(data_path + '/ali_ccp_train_10W.csv')
     # df_val = pd.read_csv(data_path + '/ali_ccp_val_10W.csv')
     # df_test = pd.read_csv(data_path + '/ali_ccp_test_10W.csv')
 
-    df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
-    df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
-    df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
+    # df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
+    # df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
+    # df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
     print("train : val : test = %d %d %d" % (len(df_train), len(df_val), len(df_test)))
     train_idx, val_idx = df_train.shape[0], df_train.shape[0] + df_val.shape[0]
     data = pd.concat([df_train, df_val, df_test], axis=0)
@@ -83,15 +84,17 @@ def main(model_name, epoch, learning_rate, batch_size, weight_decay, device, sav
         features, x_train, y_train, x_val, y_val, x_test, y_test = get_ali_ccp_data_dict(model_name)
         model = AITM(features, 2, bottom_params={"dims": [32, 16]}, tower_params_list=[{"dims": [8]}, {"dims": [8]}])
 
+
     dg = DataGenerator(x_train, y_train)
     train_dataloader, val_dataloader, test_dataloader = dg.generate_dataloader(x_val=x_val, y_val=y_val, x_test=x_test, y_test=y_test, batch_size=batch_size,num_workers=num_workers)
-
+    writer.add_graph(model, train_dataloader.__iter__().__next__()[0])
     #adaptive weight loss:
     #mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, adaptive_params={"method": "uwl"}, n_epoch=epoch, earlystop_patience=10, device=device, model_path=save_dir)
 
-    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir)
+    mtl_trainer = MTLTrainer(model, task_types=task_types, optimizer_params={"lr": learning_rate, "weight_decay": weight_decay}, n_epoch=epoch, earlystop_patience=30, device=device, model_path=save_dir,writer=writer)
     mtl_trainer.fit(train_dataloader, val_dataloader)
     auc = mtl_trainer.evaluate(mtl_trainer.model, test_dataloader)
+    writer.close()
     print(f'test auc: {auc}')
 
 
