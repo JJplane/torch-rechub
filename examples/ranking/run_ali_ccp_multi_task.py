@@ -11,12 +11,12 @@ from torch_rechub.utils.data import DataGenerator
 
 
 def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
-    # df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
-    # df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
-    # df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
-    df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
-    df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
-    df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
+    df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
+    df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
+    df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
+    # df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
+    # df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
+    # df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
     print("train : val : test = %d %d %d" % (len(df_train), len(df_val), len(df_test)))
     train_idx, val_idx = df_train.shape[0], df_train.shape[0] + df_val.shape[0]
     data = pd.concat([df_train, df_val, df_test], axis=0)

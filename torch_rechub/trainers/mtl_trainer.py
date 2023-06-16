@@ -38,7 +38,7 @@ class MTLTrainer(object):
         scheduler_params=None,
         adaptive_params=None,
         n_epoch=10,
-        earlystop_taskid=0,
+        earlystop_taskid=1,
         earlystop_patience=10,
         device="cpu",
         gpus=None,
@@ -150,6 +150,7 @@ class MTLTrainer(object):
             print("loss weight: ", [w.item() for w in self.loss_weight])
 
     def fit(self, train_dataloader, val_dataloader):
+        best_epoch = 0
         for epoch_i in range(self.n_epoch):
             self.train_one_epoch(train_dataloader)
             if self.scheduler is not None:
@@ -162,9 +163,10 @@ class MTLTrainer(object):
                 print('validation best auc of main task %d: %.6f' %
                       (self.earlystop_taskid, self.early_stopper.best_auc))
                 self.model.load_state_dict(self.early_stopper.best_weights)
+                best_epoch = epoch_i
                 break
         torch.save(self.model.state_dict(), os.path.join(self.model_path,
-                                                            "model.pth"))  #save best auc model
+                                                            f"model{best_epoch}.pth"))  #save best auc model
 
     def evaluate(self, model, data_loader):
         model.eval()
