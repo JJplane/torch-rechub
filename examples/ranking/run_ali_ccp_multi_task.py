@@ -100,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--num_workers', type=int, default=16)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
-    parser.add_argument('--device', default='Gpu')  #cuda:0
+    parser.add_argument('--device', default='cuda:0')  #cuda:0
     parser.add_argument('--save_dir', default='./')
     parser.add_argument('--seed', type=int, default=2022)
 
