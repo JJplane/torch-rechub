@@ -109,6 +109,7 @@ class MTLTrainer(object):
         for iter_i, (x_dict, ys) in enumerate(tk0):
             x_dict = {k: v.to(self.device) for k, v in x_dict.items()}  #tensor to GPU
             ys = ys.to(self.device)
+            self.model.zero_grad()
             y_preds = self.model(x_dict)
             loss_list = [self.loss_fns[i](y_preds[:, i], ys[:, i].float()) for i in range(self.n_task)]
             cvr_auc = roc_auc_score(ys[:, 0].cpu().detach().numpy(), y_preds[:, 0].cpu().detach().numpy())
@@ -154,7 +155,7 @@ class MTLTrainer(object):
                 for w in self.loss_weight:
                     w.data = w.data * normalize_coeff
             else:
-                self.model.zero_grad()
+                # self.model.zero_grad()
                 loss.backward()
                 self.optimizer.step()
             total_loss += np.array([l.item() for l in loss_list])
