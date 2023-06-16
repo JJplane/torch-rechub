@@ -112,8 +112,8 @@ class MTLTrainer(object):
             cvr_auc = roc_auc_score(ys[:, 0].cpu().detach().numpy(), y_preds[:, 0].cpu().detach().numpy())
             ctr_auc = roc_auc_score(ys[:, 1].cpu().detach().numpy(), y_preds[:, 1].cpu().detach().numpy())
             ctcvr_auc = roc_auc_score(ys[:, 2].cpu().detach().numpy(), y_preds[:, 2].cpu().detach().numpy())
-            # 显示在进度条上
-            tk0.set_postfix(cvr_auc=cvr_auc, ctr_auc=ctr_auc, ctcvr_auc=ctcvr_auc)
+            # 显示在进度条上,保留四位小数
+            tk0.set_postfix({ "cvr_auc": '%.4f' % cvr_auc, "ctr_auc": '%.4f' % ctr_auc, "ctcvr_auc": '%.4f' % ctcvr_auc})
             if isinstance(self.model, ESMM):
                 loss = sum(loss_list[1:])  #ESSM only compute loss for ctr and ctcvr task
             elif isinstance(self.model, ESMM_fix):
