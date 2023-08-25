@@ -11,7 +11,9 @@ from torch_rechub.basic.features import DenseFeature, SparseFeature
 from torch_rechub.utils.data import DataGenerator
 
 
-def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
+# def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
+def get_ali_ccp_data_dict(model_name, data_path='../../../ali_ccp_full'):
+
     # df_train = pd.read_csv(data_path + '/ali_ccp_train_sample.csv')
     # df_val = pd.read_csv(data_path + '/ali_ccp_val_sample.csv')
     # df_test = pd.read_csv(data_path + '/ali_ccp_test_sample.csv')
@@ -20,8 +22,11 @@ def get_ali_ccp_data_dict(model_name, data_path='./data/ali-ccp'):
     # df_test = pd.read_csv(data_path + '/ali_ccp_test_10W.csv')
 
     df_train = pd.read_csv(data_path + '/ali_ccp_train.csv')
+    print("train : %d" % (len(df_train)))
     df_val = pd.read_csv(data_path + '/ali_ccp_val.csv')
+    print("val : %d" % (len(df_val)))
     df_test = pd.read_csv(data_path + '/ali_ccp_test.csv')
+    print("test : %d" % (len(df_test)))
     print("train : val : test = %d %d %d" % (len(df_train), len(df_val), len(df_test)))
     train_idx, val_idx = df_train.shape[0], df_train.shape[0] + df_val.shape[0]
     data = pd.concat([df_train, df_val, df_test], axis=0)
